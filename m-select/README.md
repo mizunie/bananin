@@ -1,5 +1,11 @@
-# Bananin
+# Select con Bananin
 Custom select con Bootstrap 5 y Vue 3
+
+# Instalación
+
+Simplemente descarga los [Archivos](https://github.com/mizunie/bananin/releases/download/Select/m-select.rar) e incluye el js m-select.min.js y el css m-select.css en tu proyecto
+
+# Configuración
 
 ```HTML
 <!-- html -->
