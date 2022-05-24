@@ -1,0 +1,130 @@
+$dot-inactivo: #787878;
+$dot: #5c7fff;
+$btn: #21a4bf;
+
+.b-carrucont{
+    position: relative;
+    &.vertical{
+        height: 100%;
+    }
+    &.centroNav:not(.vertical){
+        margin: 0 30px;
+        .navega{
+            padding-top: 0px;
+        }
+        .navega button{
+            padding: 5px 0 !important;
+        }
+        .navega button:first-child {
+            position: absolute;
+            left: -30px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        .navega button:last-child {
+            position: absolute;
+            right: -30px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+    }
+    itenes{
+        display: none;
+    }
+    .b-carrusel{
+        width: 100%;
+        height: 100%;
+        .cuerpo {
+            overflow: hidden;
+        }
+        .vertical{
+            flex-direction: column;
+        }
+        .interno {
+            display: flex;
+            .wrap{
+                .item:last-child{
+                    margin-bottom: 0 !important;
+                }
+            }
+        }
+        .anima{
+            transition: all 0.5s cubic-bezier(0, 0.78, 1, 1) 0s;
+        }
+        .grab{
+            cursor: grabbing;
+        }
+        .item{
+            -ms-touch-action: pan-y;
+            touch-action: pan-y;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        .puntos {
+            display: flex;
+            justify-content: center;
+            padding-top: 7px;
+            div{
+                width: 10px;
+                height: 10px;
+                background: $dot-inactivo;
+                cursor: pointer;
+                border-radius: 100px;
+                &.activa{
+                    background: $dot;
+                }
+                &:not(:last-child){
+                    margin-right: 5px;
+                }
+            }
+        }
+        .navega {
+            display: flex;
+            justify-content: center;
+            padding-top: 7px;
+            button{
+                display: inline-block;
+                font-weight: 400;
+                line-height: 1;
+                font-size: 18px;
+                color: #fff;
+                background-color: #21a4bf;
+                border-color: #21a4bf;
+                text-align: center;
+                text-decoration: none;
+                vertical-align: middle;
+                cursor: pointer;
+                -webkit-user-select: none;
+                -moz-user-select: none;
+                user-select: none;
+                border: 1px solid;
+                padding: 0.175rem 0.45rem;
+                transition: color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+                &:disabled{
+                    cursor: default;
+                    background-color: #cecece;
+                }
+                &:first-child{
+                    margin-right: 10px;
+                }
+            }
+        }
+        .svg-icon {
+            width: 1.4em;
+            height: 1.2em;
+        }
+
+        .svg-icon path,
+        .svg-icon polygon,
+        .svg-icon rect {
+            fill: #fff;
+        }
+
+        .svg-icon circle {
+            stroke: #4691f6;
+            stroke-width: 1;
+        }
+    }
+}
