@@ -7,6 +7,13 @@ $btn: #21a4bf;
     &.vertical{
         height: 100%;
     }
+    img {
+        -webkit-user-drag: none;
+        -khtml-user-drag: none;
+        -moz-user-drag: none;
+        -o-user-drag: none;
+        user-drag: none;
+    }
     &.centroNav:not(.vertical){
         margin: 0 30px;
         .navega{

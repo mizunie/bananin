@@ -390,6 +390,9 @@ class mCarrusel {
     }
 
     scroll(event) {
+        event.preventDefault();
+        event.stopPropagation();
+        
         if (this.wheel) {
             if (event.deltaY > 0) {
                 this.siguiente();
@@ -434,7 +437,7 @@ class mCarrusel {
         let nav = this.nav ? '' : 'style="display:none"';
 
         let templa = `<div class="b-carrusel">
-              <div id="${this.id}_cuerpo" class="cuerpo"><div id="${this.id}_interno" class="interno anima border">${this.iniItems}</div></div>
+              <div id="${this.id}_cuerpo" class="cuerpo"><div id="${this.id}_interno" class="interno anima">${this.iniItems}</div></div>
               <div id="${this.id}_pie" class="pie">
                 <div id="${this.id}_puntos" class="puntos" ${puntos}><div></div></div>
                 <div id="${this.id}_navega" class="navega" ${nav}>

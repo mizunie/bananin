@@ -6,8 +6,8 @@ Carousel vanilla de Bananin
 Incluye estas etiquetas en el head
 
 ```HTML
-<script src="https://unpkg.com/@bananin/bcarousel@1.0.1/js/bCarrusel.min.js"></script>
-<link type="text/css" rel="stylesheet" href="https://unpkg.com/@bananin/bcarousel@1.0.1/css/b-carrusel.css" />
+<script src="https://unpkg.com/@bananin/bcarousel@latest/js/bCarrusel.min.js"></script>
+<link type="text/css" rel="stylesheet" href="https://unpkg.com/@bananin/bcarousel@latest/css/b-carrusel.css" />
 ```
 
 
@@ -22,33 +22,15 @@ La estructura en el html es la siguiente:
         <div class="item">   <!-- div con clase item y dentro de este lo que quieras que se muestre -->
             <div>1</div>
         </div>
-        <div class="item">
-            <div>2</div>
-        </div>
-        <div class="item">
-            <div>3</div>
-        </div>
-        <div class="item">
-            <div>4</div>
-        </div>
-        <div class="item">
-            <div>5</div>
-        </div>
-        <div class="item">
-            <div>6</div>
-        </div>
-        <div class="item">
-            <div>7</div>
-        </div>
-        <div class="item">
-            <div>8</div>
-        </div>
-        <div class="item">
-            <div>9</div>
-        </div>
-        <div class="item">
-            <div>n</div>
-        </div>
+        <div class="item"><div>2</div></div>
+        <div class="item"><div>3</div></div>
+        <div class="item"><div>4</div></div>
+        <div class="item"><div>5</div></div>
+        <div class="item"><div>6</div></div>
+        <div class="item"><div>7</div></div>
+        <div class="item"><div>8</div></div>
+        <div class="item"><div>9</div></div>
+        <div class="item"><div>n</div></div>
     </itenes>
 </div>
 ```
