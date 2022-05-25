@@ -1,3 +1,8 @@
+/**
+ * Carousel de Bananin
+ * Copyright 2022-2022 Jhoan Velasquez
+ * Licensed under: MIT
+ */
 class mCarrusel {
     constructor(options = {}) {
         this.iniVars();
@@ -214,11 +219,15 @@ class mCarrusel {
     acercar() {
         this.tick = 0;
         let empuja = 0, i;
+        
+        let origen=document.getElementById(this.id).getBoundingClientRect();
+        
         let filas = (this.filas > 1 && !this.vert) ? this.filas : 1;
         for (i = 0; i < this.colItem.length - (this.items * filas); i += filas) {
             let r = document.getElementById(this.id + "_full").getElementsByClassName('item')[i].getBoundingClientRect();
-            let compara = this.vert ? r.y : r.x;
-            if (compara < 0) {
+            let compara = this.vert ? r.y-origen.y : r.x-origen.x;
+            let medio = this.vert ? r.height*-1/2 : r.width*-1/2;
+            if (compara < medio) {
                 empuja += (this.vert ? r.height : r.width) + this.margin;
             } else {
                 break;

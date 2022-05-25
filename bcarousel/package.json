@@ -1,0 +1,14 @@
+{
+  "name": "@bananin/bcarousel",
+  "version": "1.0.6",
+  "description": "Carousel de Bananin",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "carousel"
+  ],
+  "author": "Jhoan",
+  "license": "MIT"
+}
