@@ -13,6 +13,8 @@ class mCarrusel {
 
     iniVars() {
         this.iniItems = "";
+        this.priItems = "";
+        this.ultItems = "";
         this.countItems = 1;
         this.grabando = false;
         this.mx = 0;
@@ -26,6 +28,10 @@ class mCarrusel {
         this.traslate = 'translateX';
         this.vert = false;
         this.monta = false;
+        this.dura = 0;
+        this.timerFoco = 0;
+        this.max=0;
+        this.reales=0;
     }
 
     veriDatos() {
@@ -33,19 +39,27 @@ class mCarrusel {
         this.check("id", "id", "string");
         this.check("items", "items", "number", 1);
         this.check("filas", "filas", "number", 1);
+        if (this.filas>15) {
+            this.filas=15;
+            this.debugShow("No se puede renderizar más de 15 filas");
+        }
         this.check("margin", "margen", "number", 0);
         this.check("auto", "autoplay", "number", 0);
         this.check("cercano", "ancho más cercano", "object", null, [{n: "w", o: true, t: "number"}, {n: "h", o: true, t: "number"}]);
         this.check("vert", "vertical", "boolean", false);
         this.check("puntos", "puntos", "boolean", false);
+        this.check("loop", "ciclico (loop,no,rewind)", "string", "no");
+        if (this.loop !== "loop" && this.loop !== "no" && this.loop !== "rewind") {
+            this.loop = "no";
+        }
         this.check("wheel", "evento rueda del mouse", "boolean", false);
         this.check("nav", "botones de navegación", "boolean", false);
         this.check("navcentro", "botones de navegación flotantes", "boolean", false);
         this.check("responsive", "opciones responsive", "object", null, [{n: "m", o: true, t: "number"}, {n: "i", o: true, t: "number"}]);
-        
+
         /* callbacks */
         this.check("change", "evento/callback cuando cambia la posición", "function", null);
-        
+
         if (!this.puede) {
             return;
         }
@@ -54,9 +68,7 @@ class mCarrusel {
             document.getElementById(this.id).classList.add("centroNav");
         }
         window[this.id + "_mizBcarrusel"] = this;
-        if (this.debug) {
-            console.log(this);
-        }
+        this.debugShow(this);
     }
 
     check(id, text, tipo, defecto = undefined, objeto = null) {
@@ -64,9 +76,7 @@ class mCarrusel {
             if (defecto !== undefined) {
                 this[id] = defecto;
             } else {
-                if (this.debug) {
-                    alert("Se requiere el campo " + text + " (" + id + ") de tipo " + tipo + " para continuar");
-                }
+                this.debugShow("Se requiere el campo " + text + " (" + id + ") de tipo " + tipo + " para continuar", true);
                 this.puede = false;
             }
         }
@@ -75,48 +85,24 @@ class mCarrusel {
                 if (this[id] instanceof Array) {
                     for (var c of this[id]) {
                         if (i.o && typeof c[i.n] !== i.t) {
-                            if (this.debug) {
-                                alert("Se requiere que el campo " + text + " (" + id + ") posea el atributo " + i.n + " de tipo " + i.t + " para continuar"); }
+                            this.debugShow("Se requiere que el campo " + text + " (" + id + ") posea el atributo " + i.n + " de tipo " + i.t + " para continuar", true);
                             this.puede = false;
                         }
                     }
                 } else {
                     if (i.o && typeof this[id][i.n] !== i.t) {
-                        if (this.debug) {
-                            alert("Se requiere que el campo " + text + " (" + id + ") posea el atributo " + i.n + " de tipo " + i.t + " para continuar");
-                        }
+                        this.debugShow("Se requiere que el campo " + text + " (" + id + ") posea el atributo " + i.n + " de tipo " + i.t + " para continuar", true);
                         this.puede = false;
                     }
                 }
             }
         }
-        if (this.debug) {
-            console.log(text + " tipo " + typeof this[id] + " = " + this[id]);
-        }
-    }
-
-    udatePos(x) {
-        if (x !== this.pos) {
-            this.pos = x;
-            
-            if(this.change!==null){
-                this.change(this.pos*this.filas);
-            }
-
-            this.enpa = Math.ceil(this.pos / this.items);
-
-            let colRes = document.getElementById(this.id + "_full").getElementsByClassName('resePuntos');
-            for (let i = 0; i < colRes.length; i++) {
-                colRes[i].classList.remove("activa");
-                if (this.enpa === i) {
-                    colRes[i].classList.add("activa");
-                }
-            }
-        }
+        this.debugShow(text + " tipo " + typeof this[id] + " = " + this[id]);
     }
 
     vertical(bol) {
-        document.getElementById(this.id + "_full").innerHTML = "<itenes>" + this.iniItems + "</itenes>";
+        let itenes = this.loop === "loop" ? this.ultItems + this.iniItems + this.priItems : this.iniItems;
+        document.getElementById(this.id + "_full").innerHTML = "<itenes>" + itenes + "</itenes>";
 
         this.vert = bol;
         this.refrescar();
@@ -138,6 +124,7 @@ class mCarrusel {
             this.corrigeItems();
 
             this.calculoVertical();
+            this.espacioI=document.getElementById(this.id + "_interno").offsetHeight;
         } else {
             this.countItems = Math.ceil(this.colItem.length / this.filas);
             this.traslate = 'translateX';
@@ -150,11 +137,19 @@ class mCarrusel {
 
             this.calculoHorizontal();
             this.calcAlto();
+        
+            this.espacioI=document.getElementById(this.id + "_interno").offsetWidth;
         }
 
         this.calcPuntos();
-        this.acercar();
+        if(this.loop==="loop"){
+            this.goto(this.items);
+        }else{
+            this.acercar();
+        }
         document.getElementById(this.id + "_interno").classList.add("anima");
+        
+        this.max=Math.ceil((this.reales+(4*this.filas))/this.filas);
     }
 
     calcAlto() {
@@ -194,17 +189,32 @@ class mCarrusel {
 
     goto(x, bloq = false) {
         this.tick = 0;
+        let ultimo = this.items;
         if (bloq) {
             x = x * this.items;
             if (x > this.countItems - this.items) {
                 x = this.countItems - this.items;
             }
         }
-        if (x > this.countItems - this.items) {
-            x = 0;
+        if(x<0){
+            this.debugShow("no puede retroceder a "+x);
+            if(this.loop==="rewind"){
+                this.goto(this.countItems - ultimo);
+            }
+            return;
         }
-        if (x < 0) {
-            x = this.countItems - this.items;
+        let esta;
+        if (this.vert) {
+            esta = new WebKitCSSMatrix(window.getComputedStyle(document.getElementById(this.id + "_interno")).transform).m42;
+        } else {
+            esta = new WebKitCSSMatrix(window.getComputedStyle(document.getElementById(this.id + "_interno")).transform).m41;
+        }
+        if((esta*-1>(this.espacioI-this.espacioTotal-this.porItem) && x>this.pos)){
+            this.debugShow("no puede avanzar a "+x);
+            if(this.loop==="rewind"){
+                this.goto(0);
+            }
+            return;
         }
         this.udatePos(x);
         let empuja = 0;
@@ -214,43 +224,102 @@ class mCarrusel {
         }
 
         document.getElementById(this.id + "_interno").style.transform = this.traslate + "(-" + empuja + "px)";
+
+        if (!document.getElementById(this.id + "_interno").classList.contains("anima")){
+            setTimeout(() => {
+                document.getElementById(this.id + "_interno").classList.add("anima");
+            }, 20);
+        }
+    }
+    
+    udatePos(x) {
+        let pos = x;
+        this.enpa = Math.ceil(pos / this.items);
+        
+        while (pos >= this.items + 1) {
+            pos -= this.items + 1;
+        }
+        if (x !== this.pos) {
+            this.pos = x;
+            let colRes = document.getElementById(this.id + "_full").getElementsByClassName('resePuntos');
+
+            if (this.change !== null) {
+                this.change(this.pos * this.filas);
+            }
+
+            let quen=this.loop==="loop"?1:0;
+            for (let i = 0; i < colRes.length; i++) {
+                colRes[i].classList.remove("activa");
+                if (this.enpa-quen === i) {
+                    colRes[i].classList.add("activa");
+                }
+            }
+        }
+        
+        if (this.loop === "loop") {
+            if (this.pos < 1) {
+                let debe=this.countItems-this.items*2;
+
+                this.debugShow("debajo de foco debe estar en " + debe);
+                clearTimeout(this.timerFoco);
+                this.timerFoco=setTimeout(()=>{
+                    document.getElementById(this.id + "_interno").classList.remove("anima");
+                    this.goto(debe);
+                },this.dura);
+                return;
+            }
+            if(this.pos>this.countItems-this.items-1){
+                let debe=this.items;
+
+                this.debugShow("encima de foco debe estar en " + debe);
+                clearTimeout(this.timerFoco);
+                this.timerFoco=setTimeout(()=>{
+                    document.getElementById(this.id + "_interno").classList.remove("anima");
+                    this.goto(debe);
+                },this.dura);
+                return;
+            }
+        }
     }
 
     acercar() {
         this.tick = 0;
-        let empuja = 0, i;
-        
-        let origen=document.getElementById(this.id).getBoundingClientRect();
-        
-        let filas = (this.filas > 1 && !this.vert) ? this.filas : 1;
+        let i;
+
+        let origen = document.getElementById(this.id).getBoundingClientRect();
+
+        let filas = (this.filas > 1 && !this.vert && this.loop!=="loop") ? this.filas : 1;
         for (i = 0; i < this.colItem.length - (this.items * filas); i += filas) {
             let r = document.getElementById(this.id + "_full").getElementsByClassName('item')[i].getBoundingClientRect();
-            let compara = this.vert ? r.y-origen.y : r.x-origen.x;
-            let medio = this.vert ? r.height*-1/2 : r.width*-1/2;
-            if (compara < medio) {
-                empuja += (this.vert ? r.height : r.width) + this.margin;
-            } else {
+            let compara = this.vert ? r.y - origen.y : r.x - origen.x;
+            let medio = this.vert ? r.height * -1 / 2 : r.width * -1 / 2;
+            if (compara >= medio) {
                 break;
             }
         }
-        this.udatePos(i);
-
-        document.getElementById(this.id + "_interno").style.transform = this.traslate + "(-" + empuja + "px)";
+        
+        this.goto((i/this.filas));
     }
 
     calculoHorizontal() {
         if (this.countItems < 1) {
             return;
         }
+        
+        if(this.vert || this.filas===1){
+            this.countItems=document.getElementById(this.id + "_interno").getElementsByClassName('item').length;
+        }else{
+            this.countItems=document.getElementById(this.id + "_interno").getElementsByClassName('wrap').length;
+        }
 
-        let porItem = Math.round(this.espacioTotal / this.items);
+        this.porItem = Math.round(this.espacioTotal / this.items);
         let ajuste = Math.round((this.margin / this.items) * 100) / 100;
-        porItem += ajuste - (this.filas > 1 ? this.margin : 0) - 1;
+        this.porItem += ajuste - (this.filas > 1 ? this.margin : 0) - 1;
 
         document.getElementById(this.id + "_interno").style.height = "";
-        document.getElementById(this.id + "_interno").style.width = ((porItem * this.countItems) - ajuste + (this.filas > 1 ? this.margin * this.countItems : 0)) + "px";
+        document.getElementById(this.id + "_interno").style.width = ((this.porItem * this.countItems) - ajuste + (this.filas > 1 ? this.margin * this.countItems : 0)) + "px";
         for (let i = 0; i < this.colItem.length; i++) {
-            this.colItem[i].style.width = porItem + "px";
+            this.colItem[i].style.width = this.porItem + "px";
             this.colItem[i].style.height = "";
             this.colItem[i].style.marginRight = this.margin + "px";
             this.colItem[i].style.marginBottom = "";
@@ -262,15 +331,15 @@ class mCarrusel {
             return;
         }
 
-        let porItem = Math.round(this.espacioTotal / this.items);
+        this.porItem = Math.round(this.espacioTotal / this.items);
         let ajuste = Math.round((this.margin / this.items) * 100) / 100;
-        porItem += ajuste - 1;
+        this.porItem += ajuste - 1;
 
         document.getElementById(this.id + "_interno").style.width = "";
-        document.getElementById(this.id + "_interno").style.height = ((porItem * this.countItems) - ajuste) + "px";
+        document.getElementById(this.id + "_interno").style.height = ((this.porItem * this.countItems) - ajuste) + "px";
         for (let i = 0; i < this.colItem.length; i++) {
             this.colItem[i].style.width = "";
-            this.colItem[i].style.height = porItem + "px";
+            this.colItem[i].style.height = this.porItem + "px";
             this.colItem[i].style.marginBottom = this.margin + "px";
             this.colItem[i].style.marginRight = "";
         }
@@ -278,16 +347,21 @@ class mCarrusel {
 
     pulsa(event) {
         document.getElementById(this.id + "_interno").classList.remove("anima");
+        
         if (!this.grabando) {
-            if (this.vert) {
-                this.mx = this.getY(event);
-                this.ot = new WebKitCSSMatrix(window.getComputedStyle(document.getElementById(this.id + "_interno")).transform).m42;
-            } else {
-                this.mx = this.getX(event);
-                this.ot = new WebKitCSSMatrix(window.getComputedStyle(document.getElementById(this.id + "_interno")).transform).m41;
-            }
+            this.mxOt(event);
         }
         this.grabando = true;
+    }
+    
+    mxOt(event){
+        if (this.vert) {
+            this.mx = this.getY(event);
+            this.ot = new WebKitCSSMatrix(window.getComputedStyle(document.getElementById(this.id + "_interno")).transform).m42;
+        } else {
+            this.mx = this.getX(event);
+            this.ot = new WebKitCSSMatrix(window.getComputedStyle(document.getElementById(this.id + "_interno")).transform).m41;
+        }
     }
 
     getX(event) {
@@ -320,13 +394,40 @@ class mCarrusel {
         }
     }
 
-    grag(event) {
+    grab(event) {
         if (this.grabando) {
             let dif;
             if (this.vert) {
                 dif = (this.mx - this.getY(event)) * -1;
             } else {
                 dif = (this.mx - this.getX(event)) * -1;
+            }
+            if(this.loop==="loop"){
+                let esta;
+                
+                if (this.vert) {
+                    esta = new WebKitCSSMatrix(window.getComputedStyle(document.getElementById(this.id + "_interno")).transform).m42;
+                } else {
+                    esta = new WebKitCSSMatrix(window.getComputedStyle(document.getElementById(this.id + "_interno")).transform).m41;
+                }
+                
+                if (esta>0) {
+                    let debe=document.getElementById(this.id+"_pri")[this.vert?'offsetTop':'offsetLeft']-(this.espacioI-document.getElementById(this.id+"_pri")[this.vert?'offsetTop':'offsetLeft']);
+                    
+                    this.debugShow("debajo de foco en grab debe estar en " + debe);
+                    document.getElementById(this.id + "_interno").style.transform = this.traslate + "(-" + debe + "px)";
+                    this.mxOt(event);
+                    return;
+                }
+
+                if(esta<(this.espacioI-this.espacioTotal)*-1){
+                    let debe=(this.espacioI-document.getElementById(this.id+"_pri")[this.vert?'offsetTop':'offsetLeft']);
+                            
+                    this.debugShow("encima de foco en grab debe estar en " + debe);
+                    document.getElementById(this.id + "_interno").style.transform = this.traslate + "(-" + debe + "px)";
+                    this.mxOt(event);
+                    return;
+                }
             }
             document.getElementById(this.id + "_interno").style.transform = this.traslate + "(" + (this.ot + dif) + "px)";
         }
@@ -345,9 +446,7 @@ class mCarrusel {
         if (this.monta) {
             document.getElementById(this.id).class = "";
             document.getElementById(this.id + "_full").remove();
-            if (this.debug) {
-                console.log("reset");
-            }
+            this.debugShow("reset");
         }
         this.monta = true;
 
@@ -356,15 +455,28 @@ class mCarrusel {
         document.getElementById(this.id).appendChild(bananin);
 
         this.iniItems = this.limpiarHTML(document.getElementById(this.id).getElementsByTagName("itenes")[0]);
+        this.reales=document.getElementById(this.id).getElementsByTagName("itenes")[0].getElementsByClassName('item').length;
+        if (this.loop === "loop" && this.reales<=this.items*this.filas) {
+            this.loop = "rewind";
+            this.debugShow("No hay elementos suficientes para hacer un efecto de bucle se cambiará a rewind");
+        }
         this.template();
 
         this.calcularSizes();
         this.eventos();
 
         document.getElementById(this.id + "_interno").classList.remove("anima");
-        this.goto(actuPos);
+        //this.goto(actuPos);
         setTimeout(() => {
             document.getElementById(this.id + "_interno").classList.add("anima");
+
+            let demora = getComputedStyle(document.getElementById(this.id + "_interno"))['transitionDuration'];
+            let digito = demora.replace(/[^0-9.]/g, '');
+            if (demora.indexOf("ms") > -1) {
+                this.dura = digito;
+            } else {
+                this.dura = digito * 1000;
+            }
         }, 50);
 
         clearInterval(this.interval);
@@ -377,7 +489,7 @@ class mCarrusel {
                 }
             }
         }, 1000);
-        
+
         return this;
     }
 
@@ -401,7 +513,7 @@ class mCarrusel {
     scroll(event) {
         event.preventDefault();
         event.stopPropagation();
-        
+
         if (this.wheel) {
             if (event.deltaY > 0) {
                 this.siguiente();
@@ -418,9 +530,9 @@ class mCarrusel {
         document.getElementById(this.id + "_interno").removeEventListener('touchstart', this.pulsa.bind(this), false);
         document.getElementById(this.id + "_interno").removeEventListener('mouseover', this.pausame.bind(this), false);
         document.getElementById(this.id + "_interno").removeEventListener('mouseleave', this.resume.bind(this), false);
-        document.getElementById(this.id + "_interno").removeEventListener('mousemove', this.grag.bind(this), false);
+        document.getElementById(this.id + "_interno").removeEventListener('mousemove', this.grab.bind(this), false);
         document.getElementById(this.id + "_interno").removeEventListener('wheel', this.scroll.bind(this), false);
-        document.getElementById(this.id + "_interno").removeEventListener('touchmove', this.grag.bind(this), false);
+        document.getElementById(this.id + "_interno").removeEventListener('touchmove', this.grab.bind(this), false);
 
         document.getElementById(this.id).removeEventListener('mouseup', this.suelta.bind(this), false);
         document.getElementById(this.id).removeEventListener('touchend', this.suelta.bind(this), false);
@@ -432,9 +544,9 @@ class mCarrusel {
         document.getElementById(this.id + "_interno").addEventListener('touchstart', this.pulsa.bind(this), false);
         document.getElementById(this.id + "_interno").addEventListener('mouseover', this.pausame.bind(this), false);
         document.getElementById(this.id + "_interno").addEventListener('mouseleave', this.resume.bind(this), false);
-        document.getElementById(this.id + "_interno").addEventListener('mousemove', this.grag.bind(this), false);
+        document.getElementById(this.id + "_interno").addEventListener('mousemove', this.grab.bind(this), false);
         document.getElementById(this.id + "_interno").addEventListener('wheel', this.scroll.bind(this), false);
-        document.getElementById(this.id + "_interno").addEventListener('touchmove', this.grag.bind(this), false);
+        document.getElementById(this.id + "_interno").addEventListener('touchmove', this.grab.bind(this), false);
 
         document.getElementById(this.id).addEventListener('mouseup', this.suelta.bind(this), false);
         document.getElementById(this.id).addEventListener('touchend', this.suelta.bind(this), false);
@@ -445,8 +557,10 @@ class mCarrusel {
         let puntos = this.puntos ? '' : 'style="display:none"';
         let nav = this.nav ? '' : 'style="display:none"';
 
+        let itenes = this.loop === "loop" ? this.ultItems + this.iniItems + this.priItems : this.iniItems;
+
         let templa = `<div class="b-carrusel">
-              <div id="${this.id}_cuerpo" class="cuerpo"><div id="${this.id}_interno" class="interno anima">${this.iniItems}</div></div>
+              <div id="${this.id}_cuerpo" class="cuerpo"><div id="${this.id}_interno" class="interno anima">${itenes}</div></div>
               <div id="${this.id}_pie" class="pie">
                 <div id="${this.id}_puntos" class="puntos" ${puntos}><div></div></div>
                 <div id="${this.id}_navega" class="navega" ${nav}>
@@ -466,9 +580,6 @@ class mCarrusel {
             if (elems[i].outerHTML) {
                 let add = "";
                 if (!this.vert) {
-                    if (this.filas > 1 && i === 0) {
-                        add = '<div class="wrap">';
-                    }
                     if (this.filas > 1 && i % this.filas === 0 && i > 0) {
                         add = '</div><div class="wrap">';
                     }
@@ -476,15 +587,38 @@ class mCarrusel {
                 ret = ret + add + elems[i].outerHTML.trim();
             }
         }
-        if (this.filas > 1 && i === 0 && !this.vert) {
-            ret = ret + "<div>";
+        
+        if (this.filas > 1 && !this.vert) {
+            ret = '<div class="wrap">'+ ret + "</div>";
+        }
+        
+        //priItems ultItems
+        if(this.loop==="loop"){
+            let ele=document.createElement("div");
+            ele.innerHTML=ret;
+            
+            let eleC;
+            if(this.vert || this.filas===1){
+                eleC=ele.getElementsByClassName('item');
+            }else{
+                eleC=ele.getElementsByClassName('wrap');
+            }
+            this.priItems='<div id="'+this.id+'_pri"></div>';
+            this.ultItems="";
+            if(eleC.length>this.items){
+                for (var i = 0; i < this.items; i++) {
+                    this.priItems+=eleC[i].outerHTML;
+                    this.ultItems=eleC[eleC.length-i-1].outerHTML+this.ultItems;
+                }
+            }
+            this.ultItems+='<div id="'+this.id+'_ult"></div>';
         }
 
         return ret;
     }
 
     calcPuntos() {
-        let pone = Math.ceil(this.countItems / this.items);
+        let pone = Math.ceil(this.reales / this.filas / this.items);
         let pina = "";
 
         if (pone === Infinity) {
@@ -499,5 +633,15 @@ class mCarrusel {
         }
 
         document.getElementById(this.id + "_puntos").innerHTML = pina;
+    }
+
+    debugShow(text, alert = false) {
+        if (this.debug) {
+            if (alert) {
+                alert(text);
+            } else {
+                console.log(text);
+            }
+        }
     }
 }

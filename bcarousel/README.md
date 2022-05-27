@@ -55,11 +55,12 @@ var mCar=new mCarrusel({
     filas:2,                //filas que tendrá el carrusel por defecto 1 (solo se aplica si se muestra el carrusel horizontal)
     cercano:{w:300,h:100},  //si desea que se calculen automáticamente los tamaños de los items en ancho (w) y alto (h), para que funcione no debe especificar nada en responsive
     responsive:[{m:0,i:2},{m:400,i:2},{m:1400,i:3}],//cambia de acuerdo al espacio que tenga el carrusel cuando está en forma horizontal (no la pantalla completa) [{m:px minimo del container,i:items a mostrar}] por defecto null
-    change:cambia //callback para cuando cambie el item actual por defecto null
+    loop:"rewind",          //efecto de bucle, "no"=al llegar al final se debe regresar manualmente, "rewind": luego del último elemento vuelve al inicio, "loop": crea un ciclo infinito (BETA)
+    change:cambia           //callback para cuando cambie el item actual por defecto null
 }).refrescar();
 
 function cambia(x){
-	console.log("slide "+x);
+    console.log("slide "+x);
 }
 
 //para actualizar el carrusel
