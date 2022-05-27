@@ -32,6 +32,7 @@ class mCarrusel {
         this.timerFoco = 0;
         this.max=0;
         this.reales=0;
+        this.evento=true;
     }
 
     veriDatos() {
@@ -174,6 +175,7 @@ class mCarrusel {
     }
 
     corrigeItems() {
+        let ant=this.items;
         if (this.responsive !== null && this.cercano === null) {
             for (var i of this.responsive) {
                 if (i.m <= this.espacioTotal) {
@@ -184,6 +186,9 @@ class mCarrusel {
         if (this.cercano !== null) {
             let caben = this.espacioTotal / (this.vert ? this.cercano.h : this.cercano.w);
             this.items = Math.floor(caben);
+        }
+        if(this.loop==="loop" && ant!==this.items){
+            this.refrescar();
         }
     }
 
@@ -442,6 +447,7 @@ class mCarrusel {
     }
 
     refrescar() {
+        this.evento=true;
         let actuPos = this.pos;
         if (this.monta) {
             document.getElementById(this.id).class = "";
@@ -524,33 +530,22 @@ class mCarrusel {
     }
 
     eventos() {
-        document.getElementById(this.id + "_ant").removeEventListener('click', this.anterior.bind(this), false);
-        document.getElementById(this.id + "_sig").removeEventListener('click', this.siguiente.bind(this), false);
-        document.getElementById(this.id + "_interno").removeEventListener('mousedown', this.pulsa.bind(this), false);
-        document.getElementById(this.id + "_interno").removeEventListener('touchstart', this.pulsa.bind(this), false);
-        document.getElementById(this.id + "_interno").removeEventListener('mouseover', this.pausame.bind(this), false);
-        document.getElementById(this.id + "_interno").removeEventListener('mouseleave', this.resume.bind(this), false);
-        document.getElementById(this.id + "_interno").removeEventListener('mousemove', this.grab.bind(this), false);
-        document.getElementById(this.id + "_interno").removeEventListener('wheel', this.scroll.bind(this), false);
-        document.getElementById(this.id + "_interno").removeEventListener('touchmove', this.grab.bind(this), false);
+        if(this.evento){
+            this.evento=false;
+            document.getElementById(this.id + "_ant").addEventListener('click', this.anterior.bind(this), false);
+            document.getElementById(this.id + "_sig").addEventListener('click', this.siguiente.bind(this), false);
+            document.getElementById(this.id + "_interno").addEventListener('mousedown', this.pulsa.bind(this), false);
+            document.getElementById(this.id + "_interno").addEventListener('touchstart', this.pulsa.bind(this), false);
+            document.getElementById(this.id + "_interno").addEventListener('mouseover', this.pausame.bind(this), false);
+            document.getElementById(this.id + "_interno").addEventListener('mouseleave', this.resume.bind(this), false);
+            document.getElementById(this.id + "_interno").addEventListener('mousemove', this.grab.bind(this), false);
+            document.getElementById(this.id + "_interno").addEventListener('wheel', this.scroll.bind(this), false);
+            document.getElementById(this.id + "_interno").addEventListener('touchmove', this.grab.bind(this), false);
 
-        document.getElementById(this.id).removeEventListener('mouseup', this.suelta.bind(this), false);
-        document.getElementById(this.id).removeEventListener('touchend', this.suelta.bind(this), false);
-        document.getElementById(this.id).removeEventListener('resize', this.resize.bind(this), false);
-
-        document.getElementById(this.id + "_ant").addEventListener('click', this.anterior.bind(this), false);
-        document.getElementById(this.id + "_sig").addEventListener('click', this.siguiente.bind(this), false);
-        document.getElementById(this.id + "_interno").addEventListener('mousedown', this.pulsa.bind(this), false);
-        document.getElementById(this.id + "_interno").addEventListener('touchstart', this.pulsa.bind(this), false);
-        document.getElementById(this.id + "_interno").addEventListener('mouseover', this.pausame.bind(this), false);
-        document.getElementById(this.id + "_interno").addEventListener('mouseleave', this.resume.bind(this), false);
-        document.getElementById(this.id + "_interno").addEventListener('mousemove', this.grab.bind(this), false);
-        document.getElementById(this.id + "_interno").addEventListener('wheel', this.scroll.bind(this), false);
-        document.getElementById(this.id + "_interno").addEventListener('touchmove', this.grab.bind(this), false);
-
-        document.getElementById(this.id).addEventListener('mouseup', this.suelta.bind(this), false);
-        document.getElementById(this.id).addEventListener('touchend', this.suelta.bind(this), false);
-        window.addEventListener('resize', this.resize.bind(this), false);
+            document.getElementById(this.id).addEventListener('mouseup', this.suelta.bind(this), false);
+            document.getElementById(this.id).addEventListener('touchend', this.suelta.bind(this), false);
+            window.addEventListener('resize', this.resize.bind(this), false);
+        }
     }
 
     template() {
