@@ -219,6 +219,11 @@ class mCarrusel {
             if(this.loop==="rewind"){
                 this.goto(0);
             }
+            if(this.loop==="no" && this.vert){
+                document.getElementById(this.id + "_interno").classList.remove("anima");
+                document.getElementById(this.id + "_interno").style.transform = this.traslate + "(" + 0 + "px)";
+                this.goto(this.reales-this.items);
+            }
             return;
         }
         this.udatePos(x);
@@ -303,7 +308,7 @@ class mCarrusel {
             }
         }
         
-        this.goto((i/this.filas));
+        this.goto((i/(this.vert?1:this.filas)));
     }
 
     calculoHorizontal() {
