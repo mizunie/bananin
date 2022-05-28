@@ -405,6 +405,9 @@ class mCarrusel {
     }
 
     grab(event) {
+        event.preventDefault();
+        event.stopPropagation();
+        
         if (this.grabando) {
             let dif;
             if (this.vert) {
